@@ -1,4 +1,9 @@
-import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -26,20 +31,24 @@ import { AuthModule } from './api/auth/auth.module';
 import { RedisModule } from './api/redis/redis.module';
 import { JwtMiddleware } from './middleware/jwt.middleware';
 import { LoggerModule } from './api/logger/logger.module';
-import { LoggerMiddleware } from "./middleware/logger.middleware";
-import { WebsocketModule } from "./gateway/websocket.module";
+import { LoggerMiddleware } from './middleware/logger.middleware';
+import { WebsocketModule } from './gateway/websocket.module';
 import { ChatModule } from './api/chat/chat.module';
 import { ExceptionLogModule } from './api/exception-log/exception-log.module';
 import { OperationLogModule } from './api/operation-log/operation-log.module';
 import { ViewsModule } from './api/views/views.module';
 import { RefresTokenModule } from './api/refresh-token/refresh-token.module';
-
+import * as path from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
-      isGlobal: true
+      // envFilePath: [
+      //   path.join(process.cwd(), '.aaa.env'),
+      //   path.join(process.cwd(), '.env'),
+      // ],
+      // envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
@@ -47,8 +56,8 @@ import { RefresTokenModule } from './api/refresh-token/refresh-token.module';
         host: configService.get<string>('DATABASE_HOST', 'localhost'), // 从环境变量获取，如果不存在则默认为 'localhost'
         port: configService.get<number>('DATABASE_PORT', 3306), // 从环境变量获取，如果不存在则默认为 3306
         username: configService.get<string>('DATABASE_USERNAME', 'root'), // 从环境变量获取，如果不存在则默认为 'root'
-        password: configService.get<string>('DATABASE_PASSWORD', '123456'), // 从环境变量获取，如果不存在则默认为 '123456'
-        database: configService.get<string>('DATABASE_NAME', 'sishi'), // 从环境变量获取，如果不存在则默认为 'aurora'
+        password: configService.get<string>('DATABASE_PASSWORD', 'zxin'), // 从环境变量获取，如果不存在则默认为 '123456'
+        database: configService.get<string>('DATABASE_NAME', 'Blob'), // 从环境变量获取，如果不存在则默认为 'aurora'
         entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
         retryDelay: 500,
         retryAttempts: 10,
@@ -82,23 +91,27 @@ import { RefresTokenModule } from './api/refresh-token/refresh-token.module';
     ExceptionLogModule,
     OperationLogModule,
     ViewsModule,
-    RefresTokenModule
+    RefresTokenModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-  ],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
-
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes({ path: 'userinfo/self', method: RequestMethod.ALL }, {
-      path: 'talkcomment',
-      method: RequestMethod.ALL
-    }, { path: 'comment', method: RequestMethod.ALL }); //解析请求的token
-    consumer.apply(LoggerMiddleware).forRoutes({ path: '*', method: RequestMethod.POST }, {
-      path: '*',
-      method: RequestMethod.DELETE
-    });
+    consumer.apply(JwtMiddleware).forRoutes(
+      { path: 'userinfo/self', method: RequestMethod.ALL },
+      {
+        path: 'talkcomment',
+        method: RequestMethod.ALL,
+      },
+      { path: 'comment', method: RequestMethod.ALL },
+    ); //解析请求的token
+    consumer.apply(LoggerMiddleware).forRoutes(
+      { path: '*', method: RequestMethod.POST },
+      {
+        path: '*',
+        method: RequestMethod.DELETE,
+      },
+    );
   }
 }
